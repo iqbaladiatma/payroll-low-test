@@ -1,0 +1,32 @@
+# BullsCorp Payroll App - Apache Configuration
+# Vulnerable configuration for penetration testing
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Allow access to all files (vulnerable)
+Options +Indexes +FollowSymLinks
+
+# Disable security headers (vulnerable)
+Header unset X-Frame-Options
+Header unset X-Content-Type-Options
+Header unset X-XSS-Protection
+
+# Allow dangerous file types (vulnerable)
+<Files "*.php">
+    Order allow,deny
+    Allow from all
+</Files>
+
+# Directory browsing enabled (vulnerable)
+Options +Indexes
+
+# Error pages that expose information (vulnerable)
+ErrorDocument 404 "File not found - This reveals server structure"
+ErrorDocument 500 "Internal server error - Debug info exposed"
+
+# Default document
+DirectoryIndex index.php index.html
+
+# Allow .htaccess override (vulnerable)
+AllowOverride All

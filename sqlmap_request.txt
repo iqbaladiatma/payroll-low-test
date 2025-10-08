@@ -1,0 +1,7 @@
+POST /public/login.php HTTP/1.1
+Host: localhost
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 35
+Connection: close
+
+username=admin&password=test123

@@ -1,0 +1,42 @@
+# BullsCorp Payroll App - Apache Configuration
+# Main routing configuration
+
+RewriteEngine On
+
+# Set document root to public folder
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /public/$1 [L]
+
+# Handle admin routes
+RewriteRule ^admin/(.*)$ admin/$1 [L]
+
+# Handle user routes  
+RewriteRule ^user/(.*)$ user/$1 [L]
+
+# Handle tools routes
+RewriteRule ^tools/(.*)$ tools/$1 [L]
+
+# Handle api routes
+RewriteRule ^api/(.*)$ api/$1 [L]
+
+# Handle assets routes
+RewriteRule ^assets/(.*)$ assets/$1 [L]
+
+# Default to public folder for other requests
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
+
+# Security headers (vulnerable for testing)
+Header unset X-Frame-Options
+Header unset X-Content-Type-Options
+Header unset X-XSS-Protection
+
+# Allow directory browsing (vulnerable)
+Options +Indexes
+
+# Error pages
+ErrorDocument 404 /public/404.php
+ErrorDocument 500 /public/500.php
