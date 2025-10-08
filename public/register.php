@@ -34,10 +34,17 @@ if ($_POST) {
         $error = 'Please enter a valid email address';
     } else {
         if ($authController->register($username, $password, $email)) {
-            $success = 'Registration successful! You can now login.';
-            // Log activity if function exists
-            if (function_exists('logActivity')) {
-                logActivity('User registration', 'users', null, null, "username: $username, email: $email");
+            // Auto-login the user after successful registration
+            if ($authController->login($username, $password)) {
+                // Log activity if function exists
+                if (function_exists('logActivity')) {
+                    logActivity('User registration', 'users', null, null, "username: $username, email: $email");
+                }
+                // Redirect to profile completion
+                header('Location: ../user/complete_profile.php');
+                exit;
+            } else {
+                $success = 'Registration successful! You can now login.';
             }
         } else {
             $error = 'Registration failed - username or email may already exist';

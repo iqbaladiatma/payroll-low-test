@@ -104,11 +104,16 @@ if ($_POST && !$error_message) {
                         setcookie('remember_pass', $password, time() + (86400 * 30), '/'); // Extremely vulnerable!
                     }
                     
-                    // Redirect based on role
+                    // Redirect based on role and profile completion status
                     if ($user['role'] === 'admin' || $user['role'] === 'hr') {
                         header('Location: ../admin/dashboard.php');
                     } else {
-                        header('Location: ../user/dashboard.php');
+                        // Check if user needs to complete profile
+                        if (!$user['employee_id']) {
+                            header('Location: ../user/complete_profile.php');
+                        } else {
+                            header('Location: ../user/dashboard.php');
+                        }
                     }
                     exit;
                 } else {

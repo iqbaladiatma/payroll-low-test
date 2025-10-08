@@ -28,6 +28,12 @@ try {
 $user_sql = "SELECT * FROM users WHERE id = $user_id";
 $user_data = $pdo->query($user_sql)->fetch(PDO::FETCH_ASSOC);
 
+// Check if user needs to complete profile
+if (!$user_data['employee_id']) {
+    header('Location: complete_profile.php');
+    exit;
+}
+
 // Get employee data with SQL injection vulnerability
 $employee_sql = "SELECT * FROM employees WHERE id = " . ($user_data['employee_id'] ?? $user_id);
 $employee = $pdo->query($employee_sql)->fetch(PDO::FETCH_ASSOC);

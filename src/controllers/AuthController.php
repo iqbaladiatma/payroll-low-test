@@ -40,6 +40,12 @@ class AuthController {
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['role'] = $user['role'];
                     $_SESSION['employee_id'] = $user['employee_id'];
+                    
+                    // Check if user needs to complete profile
+                    if (!$user['employee_id']) {
+                        $_SESSION['needs_profile_completion'] = true;
+                    }
+                    
                     return true;
                 }
             }
