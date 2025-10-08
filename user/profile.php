@@ -70,139 +70,7 @@ if ($_POST) {
         }
     }
 }
-    } else {
-        // Insert new profile
-        $insert_query = "INSERT INTO user_profiles 
-            (user_id, full_name, phone, address, birth_date, gender, id_number, 
-             emergency_contact, emergency_phone, bank_account, bank_name, is_complete) 
-            VALUES 
-            ($user_id, '$full_name', '$phone', '$address', '$birth_date', '$gender', 
-             '$id_number', '$emergency_contact', '$emergency_phone', '$bank_account', '$bank_name', TRUE)";
-        $db->exec($insert_query);
-    }
-    
-    $_SESSION['success'] = 'Biodata berhasil disimpan!';
-    header('Location: dashboard.php');
-    exit();
-}
-
-include '../includes/header.php';
 ?>
-
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4><i class="fas fa-user-edit"></i> Lengkapi Biodata Anda</h4>
-                    <?php if (!$is_complete): ?>
-                        <div class="alert alert-warning mt-2">
-                            <i class="fas fa-exclamation-triangle"></i> 
-                            Anda harus melengkapi biodata untuk dapat melihat informasi gaji.
-                        </div>
-                    <?php endif; ?>
-                </div>
-                <div class="card-body">
-                    <form method="POST">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label>Nama Lengkap *</label>
-                                    <input type="text" name="full_name" class="form-control" 
-                                           value="<?= $profile['full_name'] ?? '' ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label>No. Telepon *</label>
-                                    <input type="text" name="phone" class="form-control" 
-                                           value="<?= $profile['phone'] ?? '' ?>" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label>Alamat *</label>
-                            <textarea name="address" class="form-control" rows="3" required><?= $profile['address'] ?? '' ?></textarea>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label>Tanggal Lahir *</label>
-                                    <input type="date" name="birth_date" class="form-control" 
-                                           value="<?= $profile['birth_date'] ?? '' ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label>Jenis Kelamin *</label>
-                                    <select name="gender" class="form-control" required>
-                                        <option value="male" <?= ($profile['gender'] ?? '') == 'male' ? 'selected' : '' ?>>Laki-laki</option>
-                                        <option value="female" <?= ($profile['gender'] ?? '') == 'female' ? 'selected' : '' ?>>Perempuan</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label>No. KTP/ID *</label>
-                            <input type="text" name="id_number" class="form-control" 
-                                   value="<?= $profile['id_number'] ?? '' ?>" required>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label>Kontak Darurat *</label>
-                                    <input type="text" name="emergency_contact" class="form-control" 
-                                           value="<?= $profile['emergency_contact'] ?? '' ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label>No. Telepon Darurat *</label>
-                                    <input type="text" name="emergency_phone" class="form-control" 
-                                           value="<?= $profile['emergency_phone'] ?? '' ?>" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label>No. Rekening Bank</label>
-                                    <input type="text" name="bank_account" class="form-control" 
-                                           value="<?= $profile['bank_account'] ?? '' ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label>Nama Bank</label>
-                                    <input type="text" name="bank_name" class="form-control" 
-                                           value="<?= $profile['bank_name'] ?? '' ?>">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Simpan Biodata
-                            </button>
-                            <?php if ($is_complete): ?>
-                                <a href="dashboard.php" class="btn btn-secondary">
-                                    <i class="fas fa-arrow-left"></i> Kembali
-                                </a>
-                            <?php endif; ?>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<?php include '../includes/footer.php'; ?>?>
 
 
 <!DOCTYPE html>
@@ -251,9 +119,9 @@ include '../includes/header.php';
                             <div class="bg-blue-100 p-4 rounded-full w-20 h-20 mx-auto mb-4">
                                 <i class="fas fa-user text-blue-600 text-3xl mt-2"></i>
                             </div>
-                            <h3 class="text-xl font-semibold text-gray-800"><?php echo htmlspecialchars($user_data['name']); ?></h3>
-                            <p class="text-gray-600"><?php echo htmlspecialchars($user_data['position']); ?></p>
-                            <p class="text-sm text-gray-500"><?php echo htmlspecialchars($user_data['department']); ?></p>
+                            <h3 class="text-xl font-semibold text-gray-800"><?php echo htmlspecialchars($user_data['name'] ?? ''); ?></h3>
+                            <p class="text-gray-600"><?php echo htmlspecialchars($user_data['position'] ?? ''); ?></p>
+                            <p class="text-sm text-gray-500"><?php echo htmlspecialchars($user_data['department'] ?? ''); ?></p>
                         </div>
                         
                         <div class="mt-6 space-y-3">
@@ -263,7 +131,7 @@ include '../includes/header.php';
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Username:</span>
-                                <span class="font-medium"><?php echo htmlspecialchars($user_data['username']); ?></span>
+                                <span class="font-medium"><?php echo htmlspecialchars($user_data['username'] ?? ''); ?></span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Hire Date:</span>
@@ -294,19 +162,19 @@ include '../includes/header.php';
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                                        <input type="text" name="name" required value="<?php echo htmlspecialchars($user_data['name']); ?>"
+                                        <input type="text" name="name" required value="<?php echo htmlspecialchars($user_data['name'] ?? ''); ?>"
                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
                                     
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                                        <input type="email" name="email" required value="<?php echo htmlspecialchars($user_data['email']); ?>"
+                                        <input type="email" name="email" required value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>"
                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
                                     
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                        <input type="tel" name="phone" value="<?php echo htmlspecialchars($user_data['phone']); ?>"
+                                        <input type="tel" name="phone" value="<?php echo htmlspecialchars($user_data['phone'] ?? ''); ?>"
                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
                                 </div>
@@ -314,7 +182,7 @@ include '../includes/header.php';
                                 <div class="mt-4">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
                                     <textarea name="address" rows="3"
-                                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"><?php echo htmlspecialchars($user_data['address']); ?></textarea>
+                                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"><?php echo htmlspecialchars($user_data['address'] ?? ''); ?></textarea>
                                 </div>
                             </div>
 
@@ -330,26 +198,26 @@ include '../includes/header.php';
                                         <select name="department" required
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                             <option value="">Select Department</option>
-                                            <option value="IT" <?php echo $user_data['department'] === 'IT' ? 'selected' : ''; ?>>Information Technology</option>
-                                            <option value="HR" <?php echo $user_data['department'] === 'HR' ? 'selected' : ''; ?>>Human Resources</option>
-                                            <option value="Finance" <?php echo $user_data['department'] === 'Finance' ? 'selected' : ''; ?>>Finance</option>
-                                            <option value="Marketing" <?php echo $user_data['department'] === 'Marketing' ? 'selected' : ''; ?>>Marketing</option>
-                                            <option value="Sales" <?php echo $user_data['department'] === 'Sales' ? 'selected' : ''; ?>>Sales</option>
-                                            <option value="Operations" <?php echo $user_data['department'] === 'Operations' ? 'selected' : ''; ?>>Operations</option>
-                                            <option value="Customer Service" <?php echo $user_data['department'] === 'Customer Service' ? 'selected' : ''; ?>>Customer Service</option>
-                                            <option value="General" <?php echo $user_data['department'] === 'General' ? 'selected' : ''; ?>>General</option>
+                                            <option value="IT" <?php echo ($user_data['department'] ?? '') === 'IT' ? 'selected' : ''; ?>>Information Technology</option>
+                                            <option value="HR" <?php echo ($user_data['department'] ?? '') === 'HR' ? 'selected' : ''; ?>>Human Resources</option>
+                                            <option value="Finance" <?php echo ($user_data['department'] ?? '') === 'Finance' ? 'selected' : ''; ?>>Finance</option>
+                                            <option value="Marketing" <?php echo ($user_data['department'] ?? '') === 'Marketing' ? 'selected' : ''; ?>>Marketing</option>
+                                            <option value="Sales" <?php echo ($user_data['department'] ?? '') === 'Sales' ? 'selected' : ''; ?>>Sales</option>
+                                            <option value="Operations" <?php echo ($user_data['department'] ?? '') === 'Operations' ? 'selected' : ''; ?>>Operations</option>
+                                            <option value="Customer Service" <?php echo ($user_data['department'] ?? '') === 'Customer Service' ? 'selected' : ''; ?>>Customer Service</option>
+                                            <option value="General" <?php echo ($user_data['department'] ?? '') === 'General' ? 'selected' : ''; ?>>General</option>
                                         </select>
                                     </div>
                                     
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Position *</label>
-                                        <input type="text" name="position" required value="<?php echo htmlspecialchars($user_data['position']); ?>"
+                                        <input type="text" name="position" required value="<?php echo htmlspecialchars($user_data['position'] ?? ''); ?>"
                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
                                     
                                     <div class="md:col-span-2">
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Monthly Salary (IDR)</label>
-                                        <input type="number" name="salary" min="0" step="1000" value="<?php echo $user_data['salary']; ?>"
+                                        <input type="number" name="salary" min="0" step="1000" value="<?php echo $user_data['salary'] ?? 0; ?>"
                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                         <p class="text-xs text-gray-500 mt-1">This affects payroll calculations</p>
                                     </div>

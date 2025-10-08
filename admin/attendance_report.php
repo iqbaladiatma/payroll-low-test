@@ -125,7 +125,7 @@ $attendance_rate = $stats['total_employees'] > 0 ? (($stats['present'] + $stats[
         <strong>Debug Info:</strong>
         <ul class="mt-2 text-sm">
             <li>User ID: <?php echo $user_id; ?></li>
-            <li>SQL Query: <?php echo htmlspecialchars($attendance_sql); ?></li>
+            <li>SQL Query: <?php echo htmlspecialchars($attendance_sql ?? 'N/A'); ?></li>
             <li>Filters: <?php echo json_encode($_GET); ?></li>
         </ul>
     </div>
@@ -141,7 +141,7 @@ $attendance_rate = $stats['total_employees'] > 0 ? (($stats['present'] + $stats[
                     </h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-600">Welcome, <?php echo htmlspecialchars($username); ?></span>
+                    <span class="text-sm text-gray-600">Welcome, <?php echo htmlspecialchars($username ?? 'User'); ?></span>
                     <a href="dashboard_modern.php" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
                         <i class="fas fa-arrow-left mr-1"></i>Dashboard
                     </a>
@@ -226,7 +226,7 @@ $attendance_rate = $stats['total_employees'] > 0 ? (($stats['present'] + $stats[
             <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                    <input type="date" name="date" value="<?php echo htmlspecialchars($date_filter); ?>" 
+                    <input type="date" name="date" value="<?php echo htmlspecialchars($date_filter ?? ''); ?>" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 
@@ -236,7 +236,7 @@ $attendance_rate = $stats['total_employees'] > 0 ? (($stats['present'] + $stats[
                         <option value="">All Employees</option>
                         <?php foreach ($employees as $employee): ?>
                         <option value="<?php echo $employee['id']; ?>" <?php echo $employee_filter == $employee['id'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($employee['name']); ?>
+                            <?php echo htmlspecialchars($employee['name'] ?? 'Unknown'); ?>
                         </option>
                         <?php endforeach; ?>
                     </select>
@@ -247,8 +247,8 @@ $attendance_rate = $stats['total_employees'] > 0 ? (($stats['present'] + $stats[
                     <select name="department" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">All Departments</option>
                         <?php foreach ($departments as $department): ?>
-                        <option value="<?php echo htmlspecialchars($department); ?>" <?php echo $department_filter === $department ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($department); ?>
+                        <option value="<?php echo htmlspecialchars($department ?? ''); ?>" <?php echo $department_filter === $department ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($department ?? 'Unknown'); ?>
                         </option>
                         <?php endforeach; ?>
                     </select>
@@ -316,16 +316,16 @@ $attendance_rate = $stats['total_employees'] > 0 ? (($stats['present'] + $stats[
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900">
-                                            <?php echo htmlspecialchars($record['employee_name']); ?>
+                                            <?php echo htmlspecialchars($record['employee_name'] ?? 'Unknown'); ?>
                                         </div>
                                         <div class="text-sm text-gray-500">
-                                            <?php echo htmlspecialchars($record['employee_code']); ?>
+                                            <?php echo htmlspecialchars($record['employee_code'] ?? 'N/A'); ?>
                                         </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?php echo htmlspecialchars($record['department']); ?>
+                                <?php echo htmlspecialchars($record['department'] ?? 'N/A'); ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <?php echo $record['time_in'] ? date('H:i', strtotime($record['time_in'])) : '-'; ?>
@@ -380,7 +380,7 @@ $attendance_rate = $stats['total_employees'] > 0 ? (($stats['present'] + $stats[
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900">
-                                            <?php echo htmlspecialchars($employee['name']); ?>
+                                            <?php echo htmlspecialchars($employee['name'] ?? 'Unknown'); ?>
                                         </div>
                                         <div class="text-sm text-gray-500">
                                             No attendance record
@@ -389,7 +389,7 @@ $attendance_rate = $stats['total_employees'] > 0 ? (($stats['present'] + $stats[
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?php echo htmlspecialchars($employee['department']); ?>
+                                <?php echo htmlspecialchars($employee['department'] ?? 'N/A'); ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>

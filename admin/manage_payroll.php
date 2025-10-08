@@ -34,7 +34,9 @@ if ($_POST) {
     switch ($action) {
         case 'process_payroll':
             $employee_id = $_POST['employee_id'];
-            $pay_period = $_POST['pay_period'];
+            $pay_period_input = $_POST['pay_period'];
+            // Convert YYYY-MM to YYYY-MM-01 for proper date format
+            $pay_period = $pay_period_input . '-01';
             $basic_salary = $_POST['basic_salary'];
             $allowances = $_POST['allowances'] ?? 0;
             $overtime_pay = $_POST['overtime_pay'] ?? 0;
@@ -126,7 +128,7 @@ foreach ($payroll_records as $record) {
                     </h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-600">Welcome, <?php echo htmlspecialchars($username); ?></span>
+                    <span class="text-sm text-gray-600">Welcome, <?php echo htmlspecialchars($username ?? ''); ?></span>
                     <a href="dashboard_modern.php" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
                         <i class="fas fa-arrow-left mr-1"></i>Dashboard
                     </a>
@@ -208,7 +210,7 @@ foreach ($payroll_records as $record) {
                     <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
-                            <input type="month" name="month" value="<?php echo htmlspecialchars($filter_month); ?>" 
+                            <input type="month" name="month" value="<?php echo htmlspecialchars($filter_month ?? ''); ?>" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         
@@ -254,10 +256,10 @@ foreach ($payroll_records as $record) {
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div>
                                             <div class="text-sm font-medium text-gray-900">
-                                                <?php echo htmlspecialchars($record['employee_name']); ?>
+                                                <?php echo htmlspecialchars($record['employee_name'] ?? ''); ?>
                                             </div>
                                             <div class="text-sm text-gray-500">
-                                                <?php echo htmlspecialchars($record['employee_code']); ?>
+                                                <?php echo htmlspecialchars($record['employee_code'] ?? ''); ?>
                                             </div>
                                         </div>
                                     </td>
@@ -333,7 +335,7 @@ foreach ($payroll_records as $record) {
                                 <option value="">Select Employee</option>
                                 <?php foreach ($employees as $employee): ?>
                                 <option value="<?php echo $employee['id']; ?>" data-salary="<?php echo $employee['salary']; ?>">
-                                    <?php echo htmlspecialchars($employee['name']); ?> - <?php echo htmlspecialchars($employee['department']); ?>
+                                    <?php echo htmlspecialchars($employee['name'] ?? ''); ?> - <?php echo htmlspecialchars($employee['department'] ?? ''); ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>

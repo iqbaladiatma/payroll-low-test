@@ -90,10 +90,10 @@ if (isset($_GET['id'])) {
                     <div>
                         <h3 class="font-semibold text-gray-800 mb-2">Employee Information</h3>
                         <div class="space-y-1 text-sm">
-                            <div><span class="text-gray-600">Name:</span> <span class="font-medium"><?php echo htmlspecialchars($user_data['name']); ?></span></div>
+                            <div><span class="text-gray-600">Name:</span> <span class="font-medium"><?php echo htmlspecialchars($user_data['name'] ?? ''); ?></span></div>
                             <div><span class="text-gray-600">Employee ID:</span> <span class="font-medium">#<?php echo $user_data['employee_id']; ?></span></div>
-                            <div><span class="text-gray-600">Department:</span> <span class="font-medium"><?php echo htmlspecialchars($user_data['department']); ?></span></div>
-                            <div><span class="text-gray-600">Position:</span> <span class="font-medium"><?php echo htmlspecialchars($user_data['position']); ?></span></div>
+                            <div><span class="text-gray-600">Department:</span> <span class="font-medium"><?php echo htmlspecialchars($user_data['department'] ?? ''); ?></span></div>
+                            <div><span class="text-gray-600">Position:</span> <span class="font-medium"><?php echo htmlspecialchars($user_data['position'] ?? ''); ?></span></div>
                         </div>
                     </div>
                     <div>

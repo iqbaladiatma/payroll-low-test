@@ -6,7 +6,11 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../src/controllers/EmployeeController.php';
 
-checkAdmin();
+// Check if user is admin or HR
+checkAuth();
+if (!in_array($_SESSION['role'], ['admin', 'hr'])) {
+    die('Access denied - Admin or HR only');
+}
 
 $error = '';
 $success = '';

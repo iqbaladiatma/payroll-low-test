@@ -71,12 +71,43 @@ class AuthController {
             // Hash password for security (but keep plain text option for testing)
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             
-            // Insert new user - sesuai dengan struktur tabel users yang ada
-            $query = "INSERT INTO users (username, password, email, role, employee_id) VALUES (?, ?, ?, ?, NULL)";
-            $stmt = $this->db->prepare($query);
-            return $stmt->execute([$username, $hashedPassword, $email, $role]);
+            // Start transaction to create both user and employee record
+            $this->db->beginTransaction();
+            
+            // Insert new user first
+            $userQuery = "INSERT INTO users (username, password, email, role, employee_id) VALUES (?, ?, ?, ?, NULL)";
+            $userStmt = $this->db->prepare($userQuery);
+            $userStmt->execute([$username, $hashedPassword, $email, $role]);
+            $userId = $this->db->lastInsertId();
+            
+            // Create employee record for new user
+            $employeeCode = 'EMP' . str_pad($userId + 1000, 4, '0', STR_PAD_LEFT);
+            $employeeQuery = "INSERT INTO employees (employee_code, name, email, department, position, salary, hire_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $employeeStmt = $this->db->prepare($employeeQuery);
+            $employeeStmt->execute([
+                $employeeCode,
+                $username, // Use username as initial name
+                $email,
+                'General', // Default department
+                'Staff', // Default position
+                5000000, // Default salary 5M IDR
+                date('Y-m-d'), // Today as hire date
+                'active'
+            ]);
+            $employeeId = $this->db->lastInsertId();
+            
+            // Update user with employee_id
+            $updateUserQuery = "UPDATE users SET employee_id = ? WHERE id = ?";
+            $updateUserStmt = $this->db->prepare($updateUserQuery);
+            $updateUserStmt->execute([$employeeId, $userId]);
+            
+            // Commit transaction
+            $this->db->commit();
+            return true;
             
         } catch (PDOException $e) {
+            // Rollback transaction on error
+            $this->db->rollback();
             error_log("Registration error: " . $e->getMessage());
             return false;
         }

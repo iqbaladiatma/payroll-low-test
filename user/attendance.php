@@ -213,7 +213,7 @@ $stats['avg_hours'] = $stats['total_days'] > 0 ? $stats['total_hours'] / $stats[
                     </h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-600">Welcome, <?php echo htmlspecialchars($employee['name']); ?></span>
+                    <span class="text-sm text-gray-600">Welcome, <?php echo htmlspecialchars($employee['name'] ?? ''); ?></span>
                     <a href="dashboard.php" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
                         <i class="fas fa-arrow-left mr-1"></i>Dashboard
                     </a>

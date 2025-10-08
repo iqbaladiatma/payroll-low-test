@@ -127,10 +127,10 @@ function formatDate($date, $format = 'd M Y') {
     return date($format, strtotime($date));
 }
 
-// Vulnerable XSS function (no escaping)
-function displayData($data) {
-    return $data; // No HTML escaping
-}
+// Vulnerable XSS function (no escaping) - REMOVED for PHP 8+ compatibility
+// function displayData($data) {
+//     return $data; // No HTML escaping
+// }
 
 // Vulnerable CSRF token (weak implementation)
 function generateCSRFToken() {
@@ -208,4 +208,21 @@ function displayMessage() {
     }
     return null;
 }
-?>
+
+// Safe htmlspecialchars function that handles null values
+function safeHtml($string, $default = '') {
+    if ($string === null) {
+        return htmlspecialchars($default);
+    }
+    return htmlspecialchars($string);
+}
+
+// Display data safely (for PHP 8.1+ compatibility)
+function displayData($data, $default = 'N/A') {
+    return htmlspecialchars($data ?? $default);
+}
+
+// Safe echo function
+function safeEcho($data, $default = '') {
+    echo htmlspecialchars($data ?? $default);
+}

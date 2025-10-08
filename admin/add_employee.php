@@ -4,25 +4,37 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../src/controllers/EmployeeController.php';
 
-checkAdmin();
+// Check if user is admin or HR
+checkAuth();
+if (!in_array($_SESSION['role'], ['admin', 'hr'])) {
+    die('Access denied - Admin or HR only');
+}
 
 $error = '';
 $success = '';
+$employeeController = new EmployeeController();
 
 if ($_POST) {
     $name = sanitizeInput($_POST['name']);
     $position = sanitizeInput($_POST['position']);
     $salary = sanitizeInput($_POST['salary']);
     $department = sanitizeInput($_POST['department']);
-    $user_id = $_POST['user_id'] ? $_POST['user_id'] : 'NULL';
-    $employee_code = sanitizeInput($_POST['employee_code']);
+    $user_id = $_POST['user_id'] ? $_POST['user_id'] : null;
+    $employee_code = 'EMP' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+    $hire_date = date('Y-m-d');
     
-    // Vulnerable SQL injection
-    $query = "INSERT INTO employees (user_id, employee_code, name, position, salary, department, hire_date) 
-              VALUES ($user_id, '$employee_code', '$name', '$position', '$salary', '$department', CURDATE())";
+    $data = [
+        'employee_code' => $employee_code,
+        'name' => $name,
+        'position' => $position,
+        'salary' => $salary,
+        'department' => $department,
+        'hire_date' => $hire_date
+    ];
     
-    if ($db->exec($query)) {
+    if ($employeeController->addEmployee($data)) {
         $success = 'Employee added successfully!';
         logActivity('Employee added', 'employees', null, null, "name: $name, position: $position");
     } else {
@@ -31,103 +43,124 @@ if ($_POST) {
 }
 
 // Get users for linking
-$users_query = "SELECT * FROM users WHERE role = 'user'";
-$users_result = $db->query($users_query);
-
-// Get departments
-$dept_query = "SELECT * FROM departments ORDER BY name";
-$dept_result = $db->query($dept_query);
-
-$page_title = 'Add Employee - BullsCorp';
-$navbar_title = 'Add New Employee';
-$show_back_button = true;
-$back_url = 'dashboard.php';
-$body_class = 'bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen';
+try {
+    // Database connection
+    $db_host = 'localhost';
+    $db_user = 'root';
+    $db_pass = '';
+    $db_name = 'bullscorp_payroll';
+    
+    $db = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    $users_query = "SELECT * FROM users WHERE role = 'employee'";
+    $users_result = $db->query($users_query);
+} catch (PDOException $e) {
+    $error = "Database connection failed: " . $e->getMessage();
+    $users_result = [];
+}
 ?>
 
-<?php include __DIR__ . '/../includes/header.php'; ?>
-<?php include __DIR__ . '/../includes/navbar.php'; ?>
-
-<div class="max-w-2xl mx-auto px-4 py-8">
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
-            <h2 class="text-xl font-bold text-white">Employee Information</h2>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Employee - BullsCorp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="dashboard.php" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </a>
+                    <div class="flex items-center">
+                        <i class="fas fa-user-plus text-blue-600 text-2xl mr-2"></i>
+                        <h1 class="text-2xl font-bold text-gray-800">Add New Employee</h1>
+                    </div>
+                </div>
+                <a href="dashboard.php" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+            </div>
         </div>
+    </nav>
 
-        <div class="p-6">
-            <?php if ($error): ?>
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                <?php echo displayData($error); ?>
+    <div class="max-w-2xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                <h2 class="text-xl font-bold text-white">Employee Information</h2>
             </div>
-            <?php endif; ?>
 
-            <?php if ($success): ?>
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
-                <i class="fas fa-check-circle mr-2"></i>
-                <?php echo displayData($success); ?>
-                <div class="mt-2">
-                    <a href="dashboard.php" class="text-green-800 underline">Back to Dashboard</a>
+            <div class="p-6">
+                <?php if ($error): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <?php echo $error; ?>
                 </div>
-            </div>
-            <?php endif; ?>
+                <?php endif; ?>
 
-            <form method="POST" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-id-card mr-2 text-gray-400"></i>Employee Code
-                        </label>
-                        <input type="text" name="employee_code" required 
-                               value="EMP<?php echo str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT); ?>"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="e.g. EMP001">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-user mr-2 text-gray-400"></i>Full Name
-                        </label>
-                        <input type="text" name="name" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Enter employee full name">
+                <?php if ($success): ?>
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <?php echo $success; ?>
+                    <div class="mt-2">
+                        <a href="dashboard.php" class="text-green-800 underline">Back to Dashboard</a>
                     </div>
                 </div>
+                <?php endif; ?>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-briefcase mr-2 text-gray-400"></i>Position
-                        </label>
-                        <input type="text" name="position" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="e.g. Software Engineer">
+                <form method="POST" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-gray-400"></i>Full Name
+                            </label>
+                            <input type="text" name="name" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Enter employee full name">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-briefcase mr-2 text-gray-400"></i>Position
+                            </label>
+                            <input type="text" name="position" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="e.g. Software Engineer">
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-building mr-2 text-gray-400"></i>Department
-                        </label>
-                        <select name="department" required 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Select Department</option>
-                            <?php while ($dept = $dept_result->fetch(PDO::FETCH_ASSOC)): ?>
-                                <option value="<?php echo displayData($dept['name']); ?>">
-                                    <?php echo displayData($dept['name']); ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
-                </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-building mr-2 text-gray-400"></i>Department
+                            </label>
+                            <select name="department" required 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Department</option>
+                                <option value="IT">Information Technology</option>
+                                <option value="Human Resources">Human Resources</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Operations">Operations</option>
+                            </select>
+                        </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-money-bill-wave mr-2 text-gray-400"></i>Monthly Salary (Rp)
-                        </label>
-                        <input type="number" name="salary" required min="0" step="100000"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="e.g. 8000000">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-money-bill-wave mr-2 text-gray-400"></i>Monthly Salary (Rp)
+                            </label>
+                            <input type="number" name="salary" required min="0" step="100000"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="e.g. 8000000">
+                        </div>
                     </div>
 
                     <div>
@@ -137,29 +170,44 @@ $body_class = 'bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen';
                         <select name="user_id" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">No User Account</option>
-                            <?php while ($user = $users_result->fetch(PDO::FETCH_ASSOC)): ?>
-                                <option value="<?php echo $user['id']; ?>">
-                                    <?php echo displayData($user['username']); ?> (<?php echo displayData($user['email']); ?>)
-                                </option>
-                            <?php endwhile; ?>
+                            <?php 
+                            if ($users_result && is_object($users_result)) {
+                                while ($user = $users_result->fetch(PDO::FETCH_ASSOC)): ?>
+                                    <option value="<?php echo $user['id']; ?>">
+                                        <?php echo htmlspecialchars($user['username']); ?> (<?php echo htmlspecialchars($user['email']); ?>)
+                                    </option>
+                                <?php endwhile;
+                            } else {
+                                echo '<option value="">No users available</option>';
+                            }
+                            ?>
                         </select>
                         <p class="text-sm text-gray-500 mt-1">Link this employee to a user account to allow them to view their payroll</p>
                     </div>
-                </div>
 
-                <div class="flex justify-end space-x-4 pt-6 border-t">
-                    <a href="dashboard.php" 
-                       class="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors">
-                        Cancel
-                    </a>
-                    <button type="submit" 
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
-                        <i class="fas fa-plus mr-2"></i>Add Employee
-                    </button>
-                </div>
-            </form>
+                    <div class="flex justify-end space-x-4 pt-6 border-t">
+                        <a href="dashboard.php" 
+                           class="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors">
+                            Cancel
+                        </a>
+                        <button type="submit" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Add Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preview Card -->
+        <div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">
+                <i class="fas fa-eye mr-2 text-blue-600"></i>Preview
+            </h3>
+            <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-sm text-gray-600">Employee information will be displayed here after adding to the system.</p>
+            </div>
         </div>
     </div>
-</div>
-
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+</body>
+</html>

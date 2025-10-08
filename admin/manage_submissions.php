@@ -6,9 +6,20 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// No proper authentication check - vulnerability
-$user_id = $_GET['user_id'] ?? $_SESSION['user_id'] ?? 1;
-$user_role = $_GET['role'] ?? $_SESSION['role'] ?? 'admin';
+// Proper authentication check
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+    header('Location: ../public/login.php');
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+$user_role = $_SESSION['role'];
+
+// Only allow admin and hr to access this page
+if ($user_role !== 'admin' && $user_role !== 'hr') {
+    header('Location: ../user/dashboard.php');
+    exit;
+}
 
 // Database connection with exposed credentials
 $db_host = 'localhost';
@@ -29,27 +40,27 @@ if ($_POST) {
     
     switch ($action) {
         case 'approve':
-            $submission_id = $_POST['submission_id'];
-            // Direct SQL injection vulnerability
-            $sql = "UPDATE submissions SET status = 'approved', approved_by = $user_id, approved_at = NOW() WHERE id = $submission_id";
-            $pdo->exec($sql);
+            $submission_id = (int)$_POST['submission_id'];
+            // Use prepared statement for security
+            $stmt = $pdo->prepare("UPDATE submissions SET status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?");
+            $stmt->execute([$user_id, $submission_id]);
             $message = "Submission approved successfully!";
             break;
             
         case 'reject':
-            $submission_id = $_POST['submission_id'];
+            $submission_id = (int)$_POST['submission_id'];
             $reason = $_POST['reason'] ?? 'No reason provided';
-            // SQL injection vulnerability
-            $sql = "UPDATE submissions SET status = 'rejected', rejected_by = $user_id, rejected_at = NOW(), rejection_reason = '$reason' WHERE id = $submission_id";
-            $pdo->exec($sql);
+            // Use prepared statement for security
+            $stmt = $pdo->prepare("UPDATE submissions SET status = 'rejected', rejected_by = ?, rejected_at = NOW(), rejection_reason = ? WHERE id = ?");
+            $stmt->execute([$user_id, $reason, $submission_id]);
             $message = "Submission rejected successfully!";
             break;
             
         case 'delete':
-            $submission_id = $_POST['submission_id'];
-            // No authorization check - anyone can delete
-            $sql = "DELETE FROM submissions WHERE id = $submission_id";
-            $pdo->exec($sql);
+            $submission_id = (int)$_POST['submission_id'];
+            // Use prepared statement for security
+            $stmt = $pdo->prepare("DELETE FROM submissions WHERE id = ?");
+            $stmt->execute([$submission_id]);
             $message = "Submission deleted successfully!";
             break;
             
@@ -76,35 +87,55 @@ if ($_POST) {
     }
 }
 
-// Search functionality with SQL injection
+// Search functionality with proper sanitization
 $search = $_GET['search'] ?? '';
 $filter_status = $_GET['status'] ?? '';
 $filter_type = $_GET['type'] ?? '';
 
 $where_conditions = [];
+$params = [];
+
 if ($search) {
-    // Direct string concatenation - SQL injection vulnerability
-    $where_conditions[] = "(employee_name LIKE '%$search%' OR submission_type LIKE '%$search%' OR description LIKE '%$search%')";
+    $search_param = '%' . $search . '%';
+    $where_conditions[] = "(e.name LIKE ? OR s.submission_type LIKE ? OR s.description LIKE ? OR u.username LIKE ?)";
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $params[] = $search_param;
 }
 if ($filter_status) {
-    $where_conditions[] = "status = '$filter_status'";
+    $where_conditions[] = "s.status = ?";
+    $params[] = $filter_status;
 }
 if ($filter_type) {
-    $where_conditions[] = "submission_type = '$filter_type'";
+    $where_conditions[] = "s.submission_type = ?";
+    $params[] = $filter_type;
 }
 
 $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
-// Get submissions with vulnerable query - fix JOIN issue
+// Get submissions with comprehensive user info
 $sql = "SELECT s.*, 
-        COALESCE(e.name, CONCAT('User #', s.employee_id)) as employee_name, 
-        COALESCE(e.email, 'No email') as employee_email 
+        e.name as employee_name,
+        e.email as employee_email,
+        e.department,
+        u.username as user_username,
+        u.email as user_email,
+        u.role as user_role,
+        u.id as user_id,
+        -- Try to find the actual submitter
+        actual_user.username as actual_submitter_name,
+        actual_user.email as actual_submitter_email
         FROM submissions s 
         LEFT JOIN employees e ON s.employee_id = e.id 
+        LEFT JOIN users u ON s.employee_id = u.employee_id
+        LEFT JOIN users actual_user ON s.employee_id = actual_user.id
         $where_clause 
         ORDER BY s.created_at DESC";
 
-$submissions = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get statistics
 $stats_sql = "SELECT 
@@ -318,10 +349,24 @@ $stats = $pdo->query($stats_sql)->fetch(PDO::FETCH_ASSOC);
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900">
-                                            <?php echo htmlspecialchars($submission['employee_name'] ?: 'Unknown User'); ?>
+                                            <?php 
+                                            // Priority: actual_submitter > user > employee > fallback
+                                            $display_name = $submission['actual_submitter_name'] ?: 
+                                                          $submission['user_username'] ?: 
+                                                          $submission['employee_name'] ?: 
+                                                          'Unknown User';
+                                            echo htmlspecialchars($display_name);
+                                            ?>
                                         </div>
                                         <div class="text-sm text-gray-500">
-                                            <?php echo htmlspecialchars($submission['employee_email'] ?: 'No email'); ?>
+                                            <?php 
+                                            // Priority: actual_submitter > user > employee > fallback
+                                            $display_email = $submission['actual_submitter_email'] ?: 
+                                                           $submission['user_email'] ?: 
+                                                           $submission['employee_email'] ?: 
+                                                           'No email';
+                                            echo htmlspecialchars($display_email);
+                                            ?>
                                         </div>
                                     </div>
                                 </div>

@@ -68,9 +68,16 @@ if ($_POST) {
             $_SESSION['employee_id'] = $employee_id;
             $_SESSION['user_name'] = $name;
             
+            // Force session save
+            session_write_close();
+            session_start();
+            
             $message = "Profile completed successfully! Redirecting to dashboard...";
             
-            // Redirect after 2 seconds
+            // Immediate redirect instead of JavaScript delay
+            header("Refresh: 2; url=dashboard.php");
+            
+            // Also add JavaScript as backup
             echo "<script>setTimeout(function(){ window.location.href = 'dashboard.php'; }, 2000);</script>";
             
         } catch (Exception $e) {

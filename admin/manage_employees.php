@@ -137,7 +137,7 @@ foreach ($employees as $employee) {
                     </h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-600">Welcome, <?php echo htmlspecialchars($username); ?></span>
+                    <span class="text-sm text-gray-600">Welcome, <?php echo htmlspecialchars($username ?? ''); ?></span>
                     <a href="add_employee.php" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
                         <i class="fas fa-plus mr-1"></i>Add Employee
                     </a>
@@ -219,7 +219,7 @@ foreach ($employees as $employee) {
             <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" 
+                    <input type="text" name="search" value="<?php echo htmlspecialchars($search ?? ''); ?>" 
                            placeholder="Search by name, email, or employee code..." 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
@@ -229,8 +229,8 @@ foreach ($employees as $employee) {
                     <select name="department" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">All Departments</option>
                         <?php foreach ($departments as $department): ?>
-                        <option value="<?php echo htmlspecialchars($department); ?>" <?php echo $department_filter === $department ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($department); ?>
+                        <option value="<?php echo htmlspecialchars($department ?? ''); ?>" <?php echo $department_filter === $department ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($department ?? ''); ?>
                         </option>
                         <?php endforeach; ?>
                     </select>
@@ -311,19 +311,19 @@ foreach ($employees as $employee) {
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900">
-                                            <?php echo htmlspecialchars($employee['name']); ?>
+                                            <?php echo htmlspecialchars($employee['name'] ?? ''); ?>
                                         </div>
                                         <div class="text-sm text-gray-500">
-                                            <?php echo htmlspecialchars($employee['employee_code']); ?> • <?php echo htmlspecialchars($employee['email']); ?>
+                                            <?php echo htmlspecialchars($employee['employee_code'] ?? ''); ?> • <?php echo htmlspecialchars($employee['email'] ?? ''); ?>
                                         </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?php echo htmlspecialchars($employee['department']); ?>
+                                <?php echo htmlspecialchars($employee['department'] ?? ''); ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?php echo htmlspecialchars($employee['position']); ?>
+                                <?php echo htmlspecialchars($employee['position'] ?? ''); ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 Rp <?php echo number_format($employee['salary'], 0, ',', '.'); ?>

@@ -5,7 +5,11 @@ require_once '../includes/functions.php';
 require_once '../src/controllers/PayrollController.php';
 require_once '../src/controllers/EmployeeController.php';
 
-checkAdmin();
+// Check if user is admin or HR
+checkAuth();
+if (!in_array($_SESSION['role'], ['admin', 'hr'])) {
+    die('Access denied - Admin or HR only');
+}
 
 header('Content-Type: application/json');
 

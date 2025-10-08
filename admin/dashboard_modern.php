@@ -119,14 +119,15 @@ $no_salary_count = $pdo->query("
 ")->fetchColumn();
 
 if ($no_salary_count > 0) {
-    $alerts[] = [
+    // Put this alert first (highest priority)
+    array_unshift($alerts, [
         'type' => 'error',
         'icon' => 'fas fa-money-bill-wave',
         'title' => 'Missing Salary Records',
         'message' => $no_salary_count . ' active employees without salary setup',
-        'action' => 'manage_payroll.php',
+        'action' => 'javascript:showSalaryModal()',
         'action_text' => 'Setup Now'
-    ];
+    ]);
 }
 ?>
 
@@ -223,9 +224,15 @@ if ($no_salary_count > 0) {
                                             <div class="flex-1">
                                                 <h4 class="font-medium text-gray-800"><?php echo $alert['title']; ?></h4>
                                                 <p class="text-sm text-gray-600"><?php echo $alert['message']; ?></p>
+                                                <?php if (strpos($alert['action'], 'javascript:') === 0): ?>
+                                                <button onclick="<?php echo substr($alert['action'], 11); ?>" class="text-sm text-blue-600 hover:text-blue-800 mt-1 inline-block">
+                                                    <?php echo $alert['action_text']; ?> →
+                                                </button>
+                                                <?php else: ?>
                                                 <a href="<?php echo $alert['action']; ?>" class="text-sm text-blue-600 hover:text-blue-800 mt-1 inline-block">
                                                     <?php echo $alert['action_text']; ?> →
                                                 </a>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>
@@ -296,6 +303,46 @@ if ($no_salary_count > 0) {
 
         <!-- Dashboard Content -->
         <main class="p-6">
+            <!-- Alert Banners -->
+            <?php if (!empty($alerts)): ?>
+            <div class="mb-6 space-y-3">
+                <?php foreach ($alerts as $alert): ?>
+                <div class="bg-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-50 border border-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-200 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <i class="<?php echo $alert['icon']; ?> text-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-600 text-xl"></i>
+                            <div>
+                                <h4 class="font-semibold text-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-800">
+                                    <?php echo $alert['title']; ?>
+                                </h4>
+                                <p class="text-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-700 text-sm">
+                                    <?php echo $alert['message']; ?>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <?php if (strpos($alert['action'], 'javascript:') === 0): ?>
+                            <button onclick="<?php echo substr($alert['action'], 11); ?>" 
+                                    class="bg-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-600 hover:bg-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                                <?php echo $alert['action_text']; ?>
+                            </button>
+                            <?php else: ?>
+                            <a href="<?php echo $alert['action']; ?>" 
+                               class="bg-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-600 hover:bg-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                                <?php echo $alert['action_text']; ?>
+                            </a>
+                            <?php endif; ?>
+                            <button onclick="this.parentElement.parentElement.parentElement.style.display='none'" 
+                                    class="text-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-500 hover:text-<?php echo $alert['type'] === 'error' ? 'red' : ($alert['type'] === 'warning' ? 'yellow' : 'blue'); ?>-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+            
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <!-- Total Employees -->
@@ -796,6 +843,22 @@ if ($no_salary_count > 0) {
                 window.location = '?debug=1';
             }
         });
+    </script>
+
+    <!-- Include Salary Setup Modal -->
+    <?php include 'setup_salary_modal.php'; ?>
+
+    <script>
+        // Additional functions for salary modal
+        function showSalaryModal() {
+            document.getElementById('salarySetupModal').classList.remove('hidden');
+            document.getElementById('salarySetupModal').classList.add('flex');
+        }
+        
+        function closeSalaryModal() {
+            document.getElementById('salarySetupModal').classList.add('hidden');
+            document.getElementById('salarySetupModal').classList.remove('flex');
+        }
     </script>
 </body>
 </html>

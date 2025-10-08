@@ -21,13 +21,22 @@ try {
 // Get submission ID from URL (vulnerable to manipulation)
 $submission_id = $_GET['id'] ?? 0;
 
-// Fetch submission details with SQL injection vulnerability
+// Fetch submission details with comprehensive user info
 $sql = "SELECT s.*, 
-        COALESCE(e.name, CONCAT('User #', s.employee_id)) as employee_name, 
-        COALESCE(e.email, 'No email') as employee_email,
-        COALESCE(e.department, 'Unknown') as department
+        e.name as employee_name,
+        e.email as employee_email,
+        e.department,
+        u.username as user_username,
+        u.email as user_email,
+        u.role as user_role,
+        u.id as user_id,
+        -- Try to find the actual submitter
+        actual_user.username as actual_submitter_name,
+        actual_user.email as actual_submitter_email
         FROM submissions s 
         LEFT JOIN employees e ON s.employee_id = e.id 
+        LEFT JOIN users u ON s.employee_id = u.employee_id
+        LEFT JOIN users actual_user ON s.employee_id = actual_user.id
         WHERE s.id = $submission_id";
 
 try {
@@ -48,37 +57,49 @@ try {
 <div class="space-y-4">
     <!-- Employee Information -->
     <div class="bg-gray-50 p-4 rounded-lg">
-        <h4 class="font-semibold text-gray-800 mb-2">Employee Information</h4>
-        <div class="grid grid-cols-2 gap-4 text-sm">
-            <div>
-                <span class="text-gray-600">Name:</span>
-                <span class="ml-2 font-medium"><?php echo htmlspecialchars($submission['employee_name']); ?></span>
+        <h4 class="font-semibold text-gray-800 mb-3">Employee Information</h4>
+        <div class="space-y-2 text-sm">
+            <div class="flex">
+                <span class="text-gray-600 w-24">Name:</span>
+                <span class="font-medium"><?php 
+                    $display_name = $submission['actual_submitter_name'] ?: 
+                                  $submission['user_username'] ?: 
+                                  $submission['employee_name'] ?: 
+                                  'Unknown User';
+                    echo htmlspecialchars($display_name);
+                ?></span>
             </div>
-            <div>
-                <span class="text-gray-600">Email:</span>
-                <span class="ml-2 font-medium"><?php echo htmlspecialchars($submission['employee_email']); ?></span>
+            <div class="flex">
+                <span class="text-gray-600 w-24">Email:</span>
+                <span class="font-medium"><?php 
+                    $display_email = $submission['actual_submitter_email'] ?: 
+                                   $submission['user_email'] ?: 
+                                   $submission['employee_email'] ?: 
+                                   'No email';
+                    echo htmlspecialchars($display_email);
+                ?></span>
             </div>
-            <div>
-                <span class="text-gray-600">Employee ID:</span>
-                <span class="ml-2 font-medium">#<?php echo $submission['employee_id']; ?></span>
+            <div class="flex">
+                <span class="text-gray-600 w-24">Employee ID:</span>
+                <span class="font-medium">#<?php echo $submission['employee_id']; ?></span>
             </div>
-            <div>
-                <span class="text-gray-600">Department:</span>
-                <span class="ml-2 font-medium"><?php echo htmlspecialchars($submission['department']); ?></span>
+            <div class="flex">
+                <span class="text-gray-600 w-24">Department:</span>
+                <span class="font-medium"><?php echo htmlspecialchars($submission['department'] ?: 'General'); ?></span>
             </div>
         </div>
     </div>
 
     <!-- Submission Details -->
     <div class="bg-blue-50 p-4 rounded-lg">
-        <h4 class="font-semibold text-gray-800 mb-2">Submission Details</h4>
-        <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-                <span class="text-gray-600">Submission ID:</span>
+        <h4 class="font-semibold text-gray-800 mb-3">Submission Details</h4>
+        <div class="space-y-3 text-sm">
+            <div class="flex">
+                <span class="text-gray-600 w-32">Submission ID:</span>
                 <span class="font-medium">#<?php echo $submission['id']; ?></span>
             </div>
-            <div class="flex justify-between">
-                <span class="text-gray-600">Type:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">Type:</span>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                     <?php 
                     switch($submission['submission_type']) {
@@ -91,8 +112,8 @@ try {
                     <?php echo ucfirst($submission['submission_type']); ?>
                 </span>
             </div>
-            <div class="flex justify-between">
-                <span class="text-gray-600">Priority:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">Priority:</span>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                     <?php 
                     switch($submission['priority']) {
@@ -106,8 +127,8 @@ try {
                     <?php echo ucfirst($submission['priority']); ?>
                 </span>
             </div>
-            <div class="flex justify-between">
-                <span class="text-gray-600">Status:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">Status:</span>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                     <?php 
                     switch($submission['status']) {
@@ -121,20 +142,20 @@ try {
                 </span>
             </div>
             <?php if ($submission['start_date']): ?>
-            <div class="flex justify-between">
-                <span class="text-gray-600">Start Date:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">Start Date:</span>
                 <span class="font-medium"><?php echo date('M d, Y', strtotime($submission['start_date'])); ?></span>
             </div>
             <?php endif; ?>
             <?php if ($submission['end_date']): ?>
-            <div class="flex justify-between">
-                <span class="text-gray-600">End Date:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">End Date:</span>
                 <span class="font-medium"><?php echo date('M d, Y', strtotime($submission['end_date'])); ?></span>
             </div>
             <?php endif; ?>
             <?php if ($submission['amount']): ?>
-            <div class="flex justify-between">
-                <span class="text-gray-600">Amount:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">Amount:</span>
                 <span class="font-medium">Rp <?php echo number_format($submission['amount'], 0, ',', '.'); ?></span>
             </div>
             <?php endif; ?>
@@ -143,8 +164,8 @@ try {
 
     <!-- Description -->
     <div class="bg-white border p-4 rounded-lg">
-        <h4 class="font-semibold text-gray-800 mb-2">Description</h4>
-        <div class="text-sm text-gray-700 whitespace-pre-wrap"><?php echo htmlspecialchars($submission['description']); ?></div>
+        <h4 class="font-semibold text-gray-800 mb-3">Description</h4>
+        <div class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed"><?php echo htmlspecialchars($submission['description']); ?></div>
     </div>
 
     <!-- Attachment -->
@@ -161,29 +182,29 @@ try {
     </div>
     <?php endif; ?>
 
-    <!-- Timestamps -->
+    <!-- Timeline -->
     <div class="bg-gray-50 p-4 rounded-lg">
-        <h4 class="font-semibold text-gray-800 mb-2">Timeline</h4>
+        <h4 class="font-semibold text-gray-800 mb-3">Timeline</h4>
         <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-                <span class="text-gray-600">Created:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">Created:</span>
                 <span class="font-medium"><?php echo date('M d, Y H:i:s', strtotime($submission['created_at'])); ?></span>
             </div>
             <?php if ($submission['updated_at']): ?>
-            <div class="flex justify-between">
-                <span class="text-gray-600">Last Updated:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">Last Updated:</span>
                 <span class="font-medium"><?php echo date('M d, Y H:i:s', strtotime($submission['updated_at'])); ?></span>
             </div>
             <?php endif; ?>
             <?php if ($submission['approved_at']): ?>
-            <div class="flex justify-between">
-                <span class="text-gray-600">Approved:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">Approved:</span>
                 <span class="font-medium"><?php echo date('M d, Y H:i:s', strtotime($submission['approved_at'])); ?></span>
             </div>
             <?php endif; ?>
             <?php if ($submission['rejected_at']): ?>
-            <div class="flex justify-between">
-                <span class="text-gray-600">Rejected:</span>
+            <div class="flex">
+                <span class="text-gray-600 w-32">Rejected:</span>
                 <span class="font-medium"><?php echo date('M d, Y H:i:s', strtotime($submission['rejected_at'])); ?></span>
             </div>
             <?php endif; ?>

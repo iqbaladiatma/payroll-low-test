@@ -121,8 +121,8 @@ include './includes/admin_sidebar.php';
                             <i class="fas fa-user text-white text-2xl"></i>
                         </div>
                         <div>
-                            <h2 class="text-2xl font-bold text-gray-800"><?php echo htmlspecialchars($employee['name']); ?></h2>
-                            <p class="text-gray-600"><?php echo htmlspecialchars($employee['employee_code']); ?></p>
+                            <h2 class="text-2xl font-bold text-gray-800"><?php echo htmlspecialchars($employee['name'] ?? ''); ?></h2>
+                            <p class="text-gray-600"><?php echo htmlspecialchars($employee['employee_code'] ?? ''); ?></p>
                         </div>
                     </div>
 
@@ -134,7 +134,7 @@ include './includes/admin_sidebar.php';
                                     <i class="fas fa-user mr-1 text-blue-600"></i>
                                     Full Name *
                                 </label>
-                                <input type="text" name="name" value="<?php echo htmlspecialchars($employee['name']); ?>" required
+                                <input type="text" name="name" value="<?php echo htmlspecialchars($employee['name'] ?? ''); ?>" required
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
 
@@ -164,8 +164,8 @@ include './includes/admin_sidebar.php';
                                 <select name="department" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="">Select Department</option>
                                     <?php foreach ($departments as $dept): ?>
-                                    <option value="<?php echo htmlspecialchars($dept); ?>" <?php echo $employee['department'] === $dept ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($dept); ?>
+                                    <option value="<?php echo htmlspecialchars($dept ?? ''); ?>" <?php echo $employee['department'] === $dept ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($dept ?? ''); ?>
                                     </option>
                                     <?php endforeach; ?>
                                     <option value="IT" <?php echo $employee['department'] === 'IT' ? 'selected' : ''; ?>>IT</option>
@@ -181,7 +181,7 @@ include './includes/admin_sidebar.php';
                                     <i class="fas fa-briefcase mr-1 text-indigo-600"></i>
                                     Position
                                 </label>
-                                <input type="text" name="position" value="<?php echo htmlspecialchars($employee['position']); ?>"
+                                <input type="text" name="position" value="<?php echo htmlspecialchars($employee['position'] ?? ''); ?>"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
 
@@ -213,7 +213,7 @@ include './includes/admin_sidebar.php';
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <span class="text-gray-600">Employee Code:</span>
-                                    <span class="ml-2 font-medium"><?php echo htmlspecialchars($employee['employee_code']); ?></span>
+                                    <span class="ml-2 font-medium"><?php echo htmlspecialchars($employee['employee_code'] ?? ''); ?></span>
                                 </div>
                                 <div>
                                     <span class="text-gray-600">Hire Date:</span>
